@@ -15,12 +15,22 @@ services:
       - PUBLIC_URL=https://${APP_HOST}
     networks:
       - ${TRAEFIK_NETWORK_NAME}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=${TRAEFIK_NETWORK_NAME}"
-      - "traefik.http.routers.${TRAEFIK_LABEL_ID}-app-${TRAEFIK_ENTRYPOINT}.rule=Host(`${APP_HOST}`)"
-      - "traefik.http.services.${TRAEFIK_LABEL_ID}-app-${TRAEFIK_ENTRYPOINT}.loadbalancer.server.port=80"
-      - "traefik.http.routers.${TRAEFIK_LABEL_ID}-app-${TRAEFIK_ENTRYPOINT}.entrypoints=${TRAEFIK_ENTRYPOINT}"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 10s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-app.entrypoints=${TRAEFIK_ENTRYPOINT}"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-app.rule=Host(`${APP_HOST}`)"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-app.service=${TRAEFIK_LABEL_ID}-app"
+        - "traefik.http.services.${TRAEFIK_LABEL_ID}-app.loadbalancer.server.port=80"
 
   storage:
     image: alswl/excalidraw-storage-backend:v2023.11.11
@@ -30,24 +40,44 @@ services:
     networks:
       - ${TRAEFIK_NETWORK_NAME}
       - draw-internal
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=${TRAEFIK_NETWORK_NAME}"
-      - "traefik.http.routers.${TRAEFIK_LABEL_ID}-storage-${TRAEFIK_ENTRYPOINT}.rule=Host(`${STORAGE_BACKEND_HOST}`)"
-      - "traefik.http.services.${TRAEFIK_LABEL_ID}-storage-${TRAEFIK_ENTRYPOINT}.loadbalancer.server.port=8080"
-      - "traefik.http.routers.${TRAEFIK_LABEL_ID}-storage-${TRAEFIK_ENTRYPOINT}.entrypoints=${TRAEFIK_ENTRYPOINT}"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 10s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-storage.entrypoints=${TRAEFIK_ENTRYPOINT}"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-storage.rule=Host(`${STORAGE_BACKEND_HOST}`)"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-storage.service=${TRAEFIK_LABEL_ID}-storage"
+        - "traefik.http.services.${TRAEFIK_LABEL_ID}-storage.loadbalancer.server.port=8080"
 
   room:
     image: excalidraw/excalidraw-room:sha-49bf529
     restart: unless-stopped
     networks:
       - ${TRAEFIK_NETWORK_NAME}      
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=${TRAEFIK_NETWORK_NAME}"
-      - "traefik.http.routers.${TRAEFIK_LABEL_ID}-room-${TRAEFIK_ENTRYPOINT}.rule=Host(`${ROOM_HOST}`)"
-      - "traefik.http.services.${TRAEFIK_LABEL_ID}-room-${TRAEFIK_ENTRYPOINT}.loadbalancer.server.port=80"
-      - "traefik.http.routers.${TRAEFIK_LABEL_ID}-room-${TRAEFIK_ENTRYPOINT}.entrypoints=${TRAEFIK_ENTRYPOINT}"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 10s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-room.entrypoints=${TRAEFIK_ENTRYPOINT}"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-room.rule=Host(`${ROOM_HOST}`)"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-room.service=${TRAEFIK_LABEL_ID}-room"
+        - "traefik.http.services.${TRAEFIK_LABEL_ID}-room.loadbalancer.server.port=80"
 
   mongodb:
     image: mongo:7.0.5-jammy
@@ -59,8 +89,18 @@ services:
       - ${DB_VOLUME_PATH}:/data/db
     networks:
       - draw-internal
-    labels:
-      - "traefik.enable=false"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 10s
+      labels:
+        - "traefik.enable=false"
 
   mongoexpress:
     image: mongo-express:latest
@@ -75,16 +115,24 @@ services:
     networks:
       - ${TRAEFIK_NETWORK_NAME}
       - draw-internal
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=${TRAEFIK_NETWORK_NAME}"
-      - "traefik.http.routers.${TRAEFIK_LABEL_ID}-db-${TRAEFIK_ENTRYPOINT}.rule=Host(`${MONGOEXPRESS_HOST}`)"
-      - "traefik.http.services.${TRAEFIK_LABEL_ID}-db-${TRAEFIK_ENTRYPOINT}.loadbalancer.server.port=8081"
-      - "traefik.http.routers.${TRAEFIK_LABEL_ID}-db-${TRAEFIK_ENTRYPOINT}.entrypoints=${TRAEFIK_ENTRYPOINT}"
-
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 10s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-db.entrypoints=${TRAEFIK_ENTRYPOINT}"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-db.rule=Host(`${MONGOEXPRESS_HOST}`)"
+        - "traefik.http.routers.${TRAEFIK_LABEL_ID}-db.service=${TRAEFIK_LABEL_ID}-db"
+        - "traefik.http.services.${TRAEFIK_LABEL_ID}-db.loadbalancer.server.port=8081"
 networks:
   proxy:
-    name: ${TRAEFIK_NETWORK_NAME}
     external: true
   draw-internal:
     name: draw-internal
