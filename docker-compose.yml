@@ -26,6 +26,8 @@ services:
       - PUBLIC_URL=https://${APP_HOST}
     networks:
       - ${TRAEFIK_NETWORK_NAME}
+    healthcheck:
+      disable: true
     deploy:
       mode: replicated
       replicas: 1
