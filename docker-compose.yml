@@ -1,5 +1,16 @@
 version: "3.7"
 
+networks:
+  proxy:
+    external: true
+  draw-internal:
+    name: draw-internal
+    external: false
+
+volumes:
+  excalidraw_db:
+    driver: local
+
 services:
   app:
     image: alswl/excalidraw:v0.17.3-fork-b1
@@ -86,7 +97,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
       - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
     volumes:
-      - ${DB_VOLUME_PATH}:/data/db
+      - excalidraw_db:/data/db
     networks:
       - draw-internal
     deploy:
@@ -131,9 +142,3 @@ services:
         - "traefik.http.routers.${TRAEFIK_LABEL_ID}-db.rule=Host(`${MONGOEXPRESS_HOST}`)"
         - "traefik.http.routers.${TRAEFIK_LABEL_ID}-db.service=${TRAEFIK_LABEL_ID}-db"
         - "traefik.http.services.${TRAEFIK_LABEL_ID}-db.loadbalancer.server.port=8081"
-networks:
-  proxy:
-    external: true
-  draw-internal:
-    name: draw-internal
-    external: false
